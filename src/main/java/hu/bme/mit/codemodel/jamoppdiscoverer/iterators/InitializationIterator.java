@@ -1,4 +1,7 @@
-package hu.bme.mit.codemodel.jamoppdiscoverer.utils;
+package hu.bme.mit.codemodel.jamoppdiscoverer.iterators;
+
+import hu.bme.mit.codemodel.jamoppdiscoverer.ChangeProcessor;
+import hu.bme.mit.codemodel.jamoppdiscoverer.FileIterator;
 
 import java.io.File;
 

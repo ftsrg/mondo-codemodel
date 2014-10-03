@@ -1,6 +1,7 @@
 package hu.bme.mit.codemodel.jamoppdiscoverer;
 
-import hu.bme.mit.codemodel.jamoppdiscoverer.utils.*;
+import hu.bme.mit.codemodel.jamoppdiscoverer.iterators.FileDiscoverer;
+import hu.bme.mit.codemodel.jamoppdiscoverer.iterators.InitializationIterator;
 
 import java.io.File;
 

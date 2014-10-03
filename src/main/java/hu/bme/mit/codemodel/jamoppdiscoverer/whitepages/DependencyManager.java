@@ -1,5 +1,6 @@
-package hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.utils;
+package hu.bme.mit.codemodel.jamoppdiscoverer.whitepages;
 
+import hu.bme.mit.codemodel.jamoppdiscoverer.utils.PackageName;
 import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.pojo.Dependency;
 import org.jongo.MongoCollection;
 import org.jongo.MongoCursor;
@@ -8,12 +9,9 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class DependencyManager {
 
-    protected static final Pattern PACKAGENAME_PATTERN = Pattern.compile("^(.*)\\..*?$");
     protected static DependencyManager _instance = null;
     protected MongoCollection dependencies = null;
 
@@ -44,12 +42,7 @@ public class DependencyManager {
         if (d == null) {
             d = new Dependency();
             d.setFQN(FQN);
-
-            Matcher matcher = PACKAGENAME_PATTERN.matcher(FQN);
-            if (matcher.matches()) {
-                d.setPackageName(matcher.group(1));
-            }
-
+            d.setPackageName(PackageName.of(FQN));
             dependencies.save(d);
         }
 

@@ -1,9 +1,11 @@
-package hu.bme.mit.codemodel.jamoppdiscoverer.utils;
+package hu.bme.mit.codemodel.jamoppdiscoverer.iterators;
 
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 
+import hu.bme.mit.codemodel.jamoppdiscoverer.FileIterator;
+import hu.bme.mit.codemodel.jamoppdiscoverer.utils.PackageName;
 import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.pojo.Dependency;
-import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.utils.DependencyManager;
+import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.DependencyManager;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;

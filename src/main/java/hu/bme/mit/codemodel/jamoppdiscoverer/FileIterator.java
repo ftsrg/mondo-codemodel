@@ -1,4 +1,4 @@
-package hu.bme.mit.codemodel.jamoppdiscoverer.utils;
+package hu.bme.mit.codemodel.jamoppdiscoverer;
 
 import java.io.File;
 

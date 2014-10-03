@@ -1,4 +1,4 @@
-package hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.utils;
+package hu.bme.mit.codemodel.jamoppdiscoverer.whitepages;
 
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.DB;

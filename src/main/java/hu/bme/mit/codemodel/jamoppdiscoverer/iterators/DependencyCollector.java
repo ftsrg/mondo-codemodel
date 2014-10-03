@@ -1,7 +1,8 @@
-package hu.bme.mit.codemodel.jamoppdiscoverer.utils;
+package hu.bme.mit.codemodel.jamoppdiscoverer.iterators;
 
+import hu.bme.mit.codemodel.jamoppdiscoverer.FileIterator;
 import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.pojo.Dependency;
-import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.utils.DependencyManager;
+import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.DependencyManager;
 
 import java.io.*;
 import java.net.UnknownHostException;
