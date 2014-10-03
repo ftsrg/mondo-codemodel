@@ -84,6 +84,7 @@ public class FileDiscoverer implements FileIterator.Function {
         resolveDependencies(resourceSet, cp, relativeFilePath);
 
         resolveTargetReferences(resourceSet, target);
+        resolveTargetReferences(resourceSet, target);
 
         // ------------------------------------------------------------------------------------------------------ Export
 
@@ -111,6 +112,14 @@ public class FileDiscoverer implements FileIterator.Function {
             }
         } else {
             dependencies = new HashSet<>();
+        }
+
+        for (String dependency : dependencies) {
+            if (dependency.contains("*")) {
+                for(Dependency dInPackage : dependencyManager.findAll(PackageName.of(dependency))) {
+                    dependencies.add(dInPackage.getFQN());
+                }
+            }
         }
 
         System.out.println("\t\t[INFO]\tDependencies: " + Arrays.toString(dependencies.toArray()));
@@ -167,7 +176,7 @@ public class FileDiscoverer implements FileIterator.Function {
 
     protected String exportTTL(Resource target) {
         String outputPath = target.getURI().toString().replace("toprocess", "export").replace("file:", "");
-        
+
         try {
             File outputFile = new File(outputPath + ".nt");
             outputFile.getParentFile().mkdirs();
@@ -175,7 +184,7 @@ public class FileDiscoverer implements FileIterator.Function {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        
+
         try (PrintWriter w = new PrintWriter(outputPath + ".nt", "UTF-8")) {
 
             w.println("@prefix java: <https://www.java.com/> .\n" +
@@ -292,7 +301,7 @@ public class FileDiscoverer implements FileIterator.Function {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        
+
         Resource xmi = resourceSet.createResource(URI.createFileURI(outputPath + ".xmi"));
         for (EObject o : target.getContents()) {
             xmi.getContents().add(EcoreUtil.copy(o));
@@ -306,7 +315,7 @@ public class FileDiscoverer implements FileIterator.Function {
 
     protected void convertTTL(Resource target) {
         String outputPath = target.getURI().toString().replace("toprocess", "export").replace("file:", "");
-        
+
         try {
             File outputFile = new File(outputPath + ".nt");
             outputFile.getParentFile().mkdirs();
@@ -314,7 +323,7 @@ public class FileDiscoverer implements FileIterator.Function {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        
+
         try {
             File input = new File(outputPath + ".nt");
             File output = new File(outputPath + ".ttl");

@@ -25,7 +25,7 @@ public class DependencyCollector implements FileIterator.Function {
     public DependencyCollector() {
         PACKAGE_PATTERN = Pattern.compile("^package (.*?);");
         IMPORT_PATTERN = Pattern.compile("^\\s?(static)?\\s?import\\s(.*?);");
-        CLASSIFIER_PATTERN = Pattern.compile("^(.*?)(interface|class)\\s(.*?)\\s(.*)$");
+        CLASSIFIER_PATTERN = Pattern.compile("^(.*?)(interface|class|enum)\\s(.*?)\\s(.*)$");
 
         try {
             dependencyManager = DependencyManager.getInstance();

@@ -97,6 +97,13 @@ public class DependencyManager {
         dependencies.save(d);
     }
 
+    public void removeDescriptor(Dependency d) {
+        for (String depOn : new HashSet<>(d.getDependsOn())) {
+            removeDependency(d, depOn);
+        }
+        dependencies.remove("{ \"FQN\": # }", d.getFQN());
+    }
+
     // -----------------------------------------------------------------------------------------------------------------
 
     protected void addUsage(String FQN, String usedByFQN) {
