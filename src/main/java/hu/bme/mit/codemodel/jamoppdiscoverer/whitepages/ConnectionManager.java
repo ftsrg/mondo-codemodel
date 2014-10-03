@@ -3,7 +3,6 @@ package hu.bme.mit.codemodel.jamoppdiscoverer.whitepages;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.mongodb.DB;
 import com.mongodb.MongoClient;
-import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.utils.serialization.SerializationModule;
 import org.jongo.Jongo;
 import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.JacksonMapper;
@@ -22,8 +21,7 @@ public class ConnectionManager {
 
     protected ConnectionManager() throws UnknownHostException {
         db = new MongoClient().getDB("jamopp");
-        jongo = new Jongo(db, new JacksonMapper.Builder().registerModule(new SerializationModule())
-                .enable(MapperFeature.AUTO_DETECT_GETTERS).build());
+        jongo = new Jongo(db, new JacksonMapper.Builder().enable(MapperFeature.AUTO_DETECT_GETTERS).build());
         dependencies = jongo.getCollection("dependencies");
 
     }
