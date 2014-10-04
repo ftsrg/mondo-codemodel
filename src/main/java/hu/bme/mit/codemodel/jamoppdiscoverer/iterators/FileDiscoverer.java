@@ -1,12 +1,11 @@
 package hu.bme.mit.codemodel.jamoppdiscoverer.iterators;
 
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
-
 import hu.bme.mit.codemodel.jamoppdiscoverer.FileIterator;
+import hu.bme.mit.codemodel.jamoppdiscoverer.benchmark.DiscoveryBenchmarkResults;
 import hu.bme.mit.codemodel.jamoppdiscoverer.utils.PackageName;
-import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.pojo.Dependency;
 import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.DependencyManager;
-
+import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.pojo.Dependency;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.common.util.URI;
@@ -19,6 +18,7 @@ import org.eclipse.emf.ecore.xmi.XMLResource;
 import org.eclipse.emf.ecore.xmi.impl.XMIResourceFactoryImpl;
 import org.emftext.language.java.JavaClasspath;
 import org.emftext.language.java.JavaPackage;
+import org.emftext.language.java.resource.java.IJavaOptions;
 import org.emftext.language.java.resource.java.mopp.JavaResourceFactory;
 import org.openrdf.rio.*;
 
@@ -34,6 +34,7 @@ public class FileDiscoverer implements FileIterator.Function {
     protected static DependencyManager dependencyManager = null;
     protected String rootPath = new File("").getAbsolutePath() + "/";
     protected String INPUT_DIRECTORY = "toprocess/";
+    protected DiscoveryBenchmarkResults dbr;
 
     public FileDiscoverer() {
 
@@ -64,6 +65,8 @@ public class FileDiscoverer implements FileIterator.Function {
             return;
         }
 
+        dbr = new DiscoveryBenchmarkResults(file);
+
         String absoluteFilePath = file.getAbsolutePath();
         String relativeFilePath = absoluteFilePath.replace(rootPath, "");
 
@@ -71,31 +74,45 @@ public class FileDiscoverer implements FileIterator.Function {
 
         ResourceSet resourceSet = new ResourceSetImpl();
         resourceSet.getLoadOptions().put(JavaClasspath.OPTION_USE_LOCAL_CLASSPATH, Boolean.TRUE);
+        // TODO make this configurable
+        resourceSet.getLoadOptions().put(IJavaOptions.DISABLE_LAYOUT_INFORMATION_RECORDING, Boolean.TRUE);
 
         JavaClasspath cp = JavaClasspath.get(resourceSet);
         cp.registerStdLib();
         cp.registerSourceOrClassFileFolder(URI.createFileURI(rootPath + INPUT_DIRECTORY));
 
+        dbr.start(DiscoveryBenchmarkResults.Type.FILE_DISCOVERY);
         Resource target = resourceSet.getResource(URI.createFileURI(new File(rootPath + relativeFilePath).getAbsolutePath()), true);
+        dbr.tick();
 
         // --------------------------------------------------------------------------------------- Dependency resolution
 
         System.out.println("\n\nProcessing file: " + relativeFilePath +
                 "\n====================================================================================================");
 
+        dbr.start(DiscoveryBenchmarkResults.Type.LOAD_DEPENDENCY);
         resolveDependencies(resourceSet, cp, relativeFilePath);
+        dbr.tick();
 
+        dbr.start(DiscoveryBenchmarkResults.Type.DEPENDENCY_RESOLUTION);
         resolveTargetReferences(resourceSet, target);
-        resolveTargetReferences(resourceSet, target);
+        dbr.tick();
 
         // ------------------------------------------------------------------------------------------------------ Export
 
+//        dbr.start(DiscoveryBenchmarkResults.Type.XMI_EXPORT);
 //        exportXMIResource(resourceSet, target);
+//        dbr.tick();
 
+        dbr.start(DiscoveryBenchmarkResults.Type.NT_EXPORT);
         exportTTL(target);
+        dbr.tick();
 
+        dbr.start(DiscoveryBenchmarkResults.Type.TTL_CONVERT);
         convertTTL(target);
+        dbr.tick();
 
+        System.out.println("\t\t[STAT]\t" + dbr.toString());
     }
 
     protected void resolveDependencies(ResourceSet resourceSet, JavaClasspath cp, String relativeFilePath) {
@@ -116,13 +133,16 @@ public class FileDiscoverer implements FileIterator.Function {
             dependencies = new HashSet<>();
         }
 
+
+        Set<String> asteriskDependencies = new HashSet<>();
         for (String dependency : dependencies) {
             if (dependency.contains("*")) {
                 for(Dependency dInPackage : dependencyManager.findAll(PackageName.of(dependency))) {
-                    dependencies.add(dInPackage.getFQN());
+                    asteriskDependencies.add(dInPackage.getFQN());
                 }
             }
         }
+        dependencies.addAll(asteriskDependencies);
 
         System.out.println("\t\t[INFO]\tDependencies: " + Arrays.toString(dependencies.toArray()));
 
@@ -338,5 +358,11 @@ public class FileDiscoverer implements FileIterator.Function {
         } catch (IOException | RDFHandlerException | RDFParseException e) {
             e.printStackTrace();
         }
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+
+    public DiscoveryBenchmarkResults getBenchmarkResults() {
+        return dbr;
     }
 }
