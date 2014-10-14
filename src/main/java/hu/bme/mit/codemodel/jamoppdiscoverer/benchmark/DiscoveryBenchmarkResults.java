@@ -22,6 +22,10 @@ public class DiscoveryBenchmarkResults {
 
     protected Long ttlConvertTime = 0L;
 
+    protected Long sumSize = 0L;
+
+    protected Long dependencyCount = 0L;
+
     // -----------------------------------------------------------------------------------------------------------------
 
     protected Type activeType = null;
@@ -97,16 +101,9 @@ public class DiscoveryBenchmarkResults {
         return -1L;
     }
 
-    @Override
-    public String toString() {
-        return relativePath + ", " +
-                fileSize + ", " +
-                fileDiscoveryTime + ", " +
-                loadDependencyTime + ", " +
-                dependencyResolutionTime + ", " +
-                xmiExportTime + ", " +
-                ntExportTime + ", " +
-                ttlConvertTime;
+    public void addDependencySize(Long size) {
+        this.sumSize += size;
+        this.dependencyCount++;
     }
 
     public String toReadableString() {
@@ -119,7 +116,27 @@ public class DiscoveryBenchmarkResults {
                 "\n, xmiExportTime=" + xmiExportTime +
                 "\n, ntExportTime=" + ntExportTime +
                 "\n, ttlConvertTime=" + ttlConvertTime +
+                "\n, sumSize=" + sumSize +
+                "\n, dependencyCount=" + dependencyCount +
                 "\n}";
+    }
+
+    public String header() {
+        return "relativePath, fileSize, fileDiscoveryTime, loadDependencyTime, dependencyResolutionTime, xmiExportTime, ntExportTime, ttlConvertTime, sumSize, dependencyCount";
+    }
+
+    @Override
+    public String toString() {
+        return relativePath + ", " +
+                fileSize + ", " +
+                fileDiscoveryTime + ", " +
+                loadDependencyTime + ", " +
+                dependencyResolutionTime + ", " +
+                xmiExportTime + ", " +
+                ntExportTime + ", " +
+                ttlConvertTime + ", " +
+                sumSize + ", " +
+                dependencyCount;
     }
 
     public enum Type {

@@ -1,14 +1,19 @@
 package hu.bme.mit.codemodel.jamoppdiscoverer;
 
+import com.google.common.collect.HashMultimap;
 import hu.bme.mit.codemodel.jamoppdiscoverer.iterators.FileDiscoverer;
 import hu.bme.mit.codemodel.jamoppdiscoverer.iterators.InitializationIterator;
 import hu.bme.mit.codemodel.jamoppdiscoverer.utils.ReadStream;
+import hu.bme.mit.codemodel.jamoppdiscoverer.utils.RelativePath;
+import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.DependencyManager;
+import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.pojo.Dependency;
 import org.apache.commons.cli.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.util.Arrays;
+import java.net.UnknownHostException;
+import java.util.*;
 
 public class CommandParser {
 
@@ -52,8 +57,6 @@ public class CommandParser {
 
     public void execute() {
 
-        FileDiscoverer fileDiscoverer = new FileDiscoverer();
-
         // --------------------------------------------------------------------------------------------------------- NEW
 
         if (newFilesListPath != null) {
@@ -92,16 +95,50 @@ public class CommandParser {
 
         // ----------------------------------------------------------------------------------------------------- DEFAULT
 
-        if(newFilesListPath == null || modifiedFilesListPath == null || deletedFilesListPath == null) {
+        if (newFilesListPath == null || modifiedFilesListPath == null || deletedFilesListPath == null) {
             File f = new File("toprocess/");
             FileIterator.iterate(f, new InitializationIterator());
         }
 
         // ----------------------------------------------------------------------------------------------------- PROCESS
 
-        for (String file : ChangeProcessor.getFilesToProcess()) {
-            fileDiscoverer.execute(new File(file));
+        try {
+            DependencyManager dm = DependencyManager.getInstance();
+
+            // MultiMap of packages, and the files inside them
+            HashMultimap<String, String> packageAndFiles = HashMultimap.create();
+
+            for (String path : ChangeProcessor.getFilesToProcess()) {
+                String relativePath = RelativePath.of(path);
+
+                Dependency dependency = dm.find(relativePath);
+                if (dependency != null) {
+                    String packageName = dependency.getPackageName();
+
+                    if (!"".equals(packageName)) {
+                        packageAndFiles.get(packageName).add(relativePath);
+                    }
+                } else {
+                    packageAndFiles.get("").add(relativePath);
+                }
+            }
+
+            // processing packages separately
+            Set<String> packages = packageAndFiles.keys().elementSet();
+
+            for (String p : packages) {
+                FileDiscoverer packageDiscoverer = new FileDiscoverer(p);
+
+                for (String file : packageAndFiles.get(p)) {
+                    packageDiscoverer.execute(new File(file));
+                }
+            }
+
+
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
         }
+
     }
 
     protected void printHelp() {

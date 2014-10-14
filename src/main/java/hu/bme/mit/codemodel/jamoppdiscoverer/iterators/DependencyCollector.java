@@ -109,7 +109,9 @@ public class DependencyCollector implements FileIterator.Function {
 
                     }
 
-                } else if (classifierName == null) {
+                }
+
+                if (classifierName == null) {
                     Matcher importMatcher = IMPORT_PATTERN.matcher(line);
                     Matcher classifierMatcher = CLASSIFIER_PATTERN.matcher(line);
 
