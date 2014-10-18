@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # clean the database
-~/4store-graph-driver/scripts/4s-boss-start-single.sh 
+#~/4store-graph-driver/scripts/4s-boss-start-single.sh 
+./4s-init-single-node.sh
 ~/4store-graph-driver/scripts/4s-restart.sh
 
 FILES=$(find `pwd`/export/ -name "*.ttl")
