@@ -1,0 +1,34 @@
+PREFIX java: <https://www.java.com/>
+PREFIX xannotations: <http://www.emftext.org/java/annotations#/>
+PREFIX xarrays: <http://www.emftext.org/java/arrays#/>
+PREFIX xclassifiers: <http://www.emftext.org/java/classifiers#/>
+PREFIX xcommons: <http://www.emftext.org/java/commons#/>
+PREFIX xcontainers: <http://www.emftext.org/java/containers#/>
+PREFIX xexpressions: <http://www.emftext.org/java/expressions#/>
+PREFIX xgenerics: <http://www.emftext.org/java/generics#/>
+PREFIX ximports: <http://www.emftext.org/java/imports#/>
+PREFIX xinstantiations: <http://www.emftext.org/java/instantiations#/>
+PREFIX xliterals: <http://www.emftext.org/java/literals#/>
+PREFIX xmembers: <http://www.emftext.org/java/members#/>
+PREFIX xmodifiers: <http://www.emftext.org/java/modifiers#/>
+PREFIX xoperators: <http://www.emftext.org/java/operators#/>
+PREFIX xparameters: <http://www.emftext.org/java/parameters#/>
+PREFIX xreferences: <http://www.emftext.org/java/references#/>
+PREFIX xstatements: <http://www.emftext.org/java/statements#/>
+PREFIX xtypes: <http://www.emftext.org/java/types#/>
+PREFIX xvariables: <http://www.emftext.org/java/variables#/>
+
+PREFIX base: <http://www.semanticweb.org/ontologies/2011/1/TrainRequirementOntology.owl#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl:  <http://www.w3.org/2002/07/owl#>
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?addEx
+WHERE
+{
+	?addEx rdf:type <http://www.emftext.org/java/expressions#//AdditiveExpression> .
+	?addEx <http://www.emftext.org/java/expressions#//AdditiveExpression/children> ?strRef .
+	?strRef <http://www.emftext.org/java/references#//StringReference/value> ""^^<http://www.w3.org/2001/XMLSchema#string> .
+	?addEx <http://www.emftext.org/java/expressions#//AdditiveExpression/additiveOperators> ?addOp .
+	?addOp rdf:type <http://www.emftext.org/java/operators#//Addition> .
+}

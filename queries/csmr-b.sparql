@@ -1,0 +1,15 @@
+SELECT ?cb
+WHERE
+{
+	?cb <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
+		<http://www.emftext.org/java/statements#//CatchBlock> .
+	?cb <http://www.emftext.org/java/statements#//CatchBlock/parameter>
+		?cbParam .
+	
+	?io <http://www.w3.org/1999/02/22-rdf-syntax-ns#type>
+		<http://www.emftext.org/java/expressions#//InstanceOfExpression> .
+	?io <http://www.emftext.org/java/expressions#//InstanceOfExpression/child>
+		 ?ioChild .
+	?ioChild <http://www.emftext.org/java/references#//ElementReference/target>
+		?cbParam
+}

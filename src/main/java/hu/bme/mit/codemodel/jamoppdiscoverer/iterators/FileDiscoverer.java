@@ -7,6 +7,7 @@ import hu.bme.mit.codemodel.jamoppdiscoverer.utils.PackageName;
 import hu.bme.mit.codemodel.jamoppdiscoverer.utils.RelativePath;
 import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.DependencyManager;
 import hu.bme.mit.codemodel.jamoppdiscoverer.whitepages.pojo.Dependency;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.eclipse.emf.common.notify.Notifier;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.TreeIterator;
@@ -27,10 +28,12 @@ import org.openrdf.rio.*;
 import java.io.*;
 import java.net.UnknownHostException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class FileDiscoverer implements FileIterator.Function {
 
-    protected static final int DEBUG_LEVEL = 0;
+    protected static final int DEBUG_LEVEL = -9001;
     protected static DependencyManager dependencyManager = null;
     private final JavaClasspath cp;
     protected String rootPath = new File("").getAbsolutePath() + "/";
@@ -42,6 +45,10 @@ public class FileDiscoverer implements FileIterator.Function {
     protected Set<Resource> basePackageResources = new HashSet<>();
     protected Long packageSize = 0L;
     protected Long packageCount = 0L;
+    protected static Pattern literalPattern = Pattern.compile("^(.*?)(\\^\\^.*)$");
+
+//    protected static ResourceSet cprs = new ResourceSetImpl();
+//    protected static JavaClasspath scp = JavaClasspath.get(cprs);
 
     public FileDiscoverer(String packageName) {
 
@@ -69,12 +76,25 @@ public class FileDiscoverer implements FileIterator.Function {
 
         // init ResourceSet
         resourceSet.getLoadOptions().put(JavaClasspath.OPTION_USE_LOCAL_CLASSPATH, Boolean.TRUE);
+//        resourceSet.getLoadOptions().put(JavaClasspath.OPTION_REGISTER_STD_LIB, Boolean.TRUE);
+
         // TODO make this configurable
         resourceSet.getLoadOptions().put(IJavaOptions.DISABLE_LAYOUT_INFORMATION_RECORDING, Boolean.TRUE);
 
         cp = JavaClasspath.get(resourceSet);
-        cp.registerStdLib();
-        cp.registerSourceOrClassFileFolder(URI.createFileURI(rootPath + INPUT_DIRECTORY));
+//        scp.registerStdLib();
+//
+//        Map<String, List<String>> packageClassifierMap = scp.getPackageClassifierMap();
+//        for(String p : packageClassifierMap.keySet()) {
+//            cp.getPackageClassifierMap().put(p, new ArrayList<String>(packageClassifierMap.get(p)));
+//        }
+//
+//        resourceSet.getURIConverter().getURIMap().putAll(cprs.getURIConverter().getURIMap());
+
+//        javaClasspath.registerStdLib();
+//        resourceSet.getjavaClasspath.getDefaultImports();
+//        cp.registerStdLib();
+//        cp.registerSourceOrClassFileFolder(URI.createFileURI(rootPath + INPUT_DIRECTORY));
 
 
         loadPackageResources();
@@ -422,7 +442,17 @@ public class FileDiscoverer implements FileIterator.Function {
 //                    if (DEBUG_LEVEL > 0) System.out.println("\t" + _attribute.getName() + ":\t" + attributeValue + "\t" + attributeType);
 
                     String attributeString = ResourceFactory.createTypedLiteral(attribute).toString();
-                    w.println("<" + objectURI + "> <" + attributeURI + "> '''" + attributeString.replace("^^", "'''^^<") + "> .");
+                    String toSaveString = "";
+
+                    Matcher matcher = literalPattern.matcher(attributeString);
+
+                    if (matcher.matches()) {
+                        toSaveString = "'''" + StringEscapeUtils.escapeJava(matcher.group(1)) + "'''" + matcher.group(2).replace("^^", "^^<") + ">";
+                    } else {
+                        toSaveString = "'''" + attributeString.replace("^^", "'''^^<") + ">";
+                    }
+
+                    w.println("<" + objectURI + "> <" + attributeURI + "> " + toSaveString + " .");
                 }
 
                 // --------------------------------------------------------------------------------------- REFERENCE

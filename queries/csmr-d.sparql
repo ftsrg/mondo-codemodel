@@ -1,0 +1,22 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX java: <http://www.emftext.org/java/>
+PREFIX commons: <http://www.emftext.org/commons/>
+
+SELECT ?methodCall
+WHERE
+{
+	?ref rdf:type <java:references#//Reference> .
+	?ref <java:references#//Reference/next> ?methodCall .
+	?ref <java:references#//ElementReference/target> ?var .
+	?var rdf:type <java:variables#//Variable> .
+
+	?eqLayout rdf:type <commons:layout#//ReferenceLayoutInformation> .
+	?eqLayout <commons:layout#//LayoutInformation/visibleTokenText>
+		"equals"^^<http://www.w3.org/2001/XMLSchema#string> .
+	?eqLayout <commons:layout#//ReferenceLayoutInformation/object> ?eqEnumID .
+
+	?methodCall rdf:type <java:references#//MethodCall> .
+	?methodCall <java:references#//ElementReference/target> ?eqEnumID .
+	?methodCall <java:references#//Argumentable/arguments> ?arg .
+	?arg rdf:type <java:references#//StringReference> .
+}

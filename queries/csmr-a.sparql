@@ -1,0 +1,13 @@
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT ?sw
+WHERE
+{
+	?sw rdf:type <http://www.emftext.org/java/statements#//Switch> .
+
+	OPTIONAL {
+	  ?sw <http://www.emftext.org/java/statements#//Switch/cases> ?sc .
+	  ?sc rdf:type <http://www.emftext.org/java/statements#//DefaultSwitchCase>
+	}
+	FILTER (!BOUND(?sc))
+}
