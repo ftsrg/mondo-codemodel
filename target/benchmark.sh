@@ -3,6 +3,7 @@
 for project in {physhun,djvu,xalan,cloudstack}; do
 
 	rm -rf ./toprocess/*
+	mkdir ./toprocess/
 	cp ~/mondo-codemodel/source-projects/$project/ ./toprocess/
 
 	mkdir -p ~/mondo-codemodel/results/$project/
