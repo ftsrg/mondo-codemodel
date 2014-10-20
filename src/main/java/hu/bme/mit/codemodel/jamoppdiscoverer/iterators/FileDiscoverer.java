@@ -34,8 +34,15 @@ import java.util.regex.Pattern;
 public class FileDiscoverer implements FileIterator.Function {
 
     protected static final int DEBUG_LEVEL = -9001;
+    
+    protected static final boolean EXPORT_CLASS = true;
+    protected static final boolean EXPORT_SUPERCLASSES = true;
+    protected static final boolean EXPORT_ATTRIBUTES = false;
+    protected static final boolean EXPORT_REFERENCES = true;
+
+
     protected static DependencyManager dependencyManager = null;
-    private final JavaClasspath cp;
+    protected final JavaClasspath cp;
     protected String rootPath = new File("").getAbsolutePath() + "/";
     protected String INPUT_DIRECTORY = "toprocess/";
     protected DiscoveryBenchmarkResults dbr;
@@ -413,76 +420,83 @@ public class FileDiscoverer implements FileIterator.Function {
 
                 // ------------------------------------------------------------------------------------------- CLASS
 
-                EClass eC = object.eClass();
-                String eCURI = EcoreUtil.getURI(eC).toString();
+                if (EXPORT_CLASS) {
+                    EClass eC = object.eClass();
+                    String eCURI = EcoreUtil.getURI(eC).toString();
 //                if (DEBUG_LEVEL > 0) System.out.println("[ " + eC.getName() + " ]\t" + eCURI);
 
-                w.println("<" + objectURI + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <" + eCURI + "> .");
+                    w.println("<" + objectURI + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <" + eCURI + "> .");
+                }
 
                 // -------------------------------------------------------------------------------------- SUPERCLASS
 
-                for (EClass _eclass : object.eClass().getEAllSuperTypes()) {
-                    String eclassURI = EcoreUtil.getURI(_eclass).toString();
+                if (EXPORT_SUPERCLASSES) {
+                    for (EClass _eclass : object.eClass().getEAllSuperTypes()) {
+                        String eclassURI = EcoreUtil.getURI(_eclass).toString();
 //                    if (DEBUG_LEVEL > 0) System.out.println("[ " + _eclass.getName() + " ]\t" + eclassURI);
 
-                    w.println("<" + objectURI + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <" + eclassURI + "> .");
+                        w.println("<" + objectURI + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <" + eclassURI + "> .");
+                    }
                 }
 
                 // --------------------------------------------------------------------------------------- ATTRIBUTE
 
-                // attributeFor:
-                for (EAttribute _attribute : object.eClass().getEAllAttributes()) {
-                    String attributeURI = EcoreUtil.getURI(_attribute).toString();
-                    Object attribute = object.eGet(_attribute);
-                    if (attribute == null) {
-                        continue; // attributeFor;
-                    }
+                if (EXPORT_ATTRIBUTES) {
+                    // attributeFor:
+                    for (EAttribute _attribute : object.eClass().getEAllAttributes()) {
+                        String attributeURI = EcoreUtil.getURI(_attribute).toString();
+                        Object attribute = object.eGet(_attribute);
+                        if (attribute == null) {
+                            continue; // attributeFor;
+                        }
 //                    String attributeValue = attribute.toString();
 //                    String attributeType = EcoreUtil.getURI(_attribute.getEAttributeType()).toString();
 //                    if (DEBUG_LEVEL > 0) System.out.println("\t" + _attribute.getName() + ":\t" + attributeValue + "\t" + attributeType);
 
-                    String attributeString = ResourceFactory.createTypedLiteral(attribute).toString();
-                    String toSaveString = "";
+                        String attributeString = ResourceFactory.createTypedLiteral(attribute).toString();
+                        String toSaveString = "";
 
-                    Matcher matcher = literalPattern.matcher(attributeString);
+                        Matcher matcher = literalPattern.matcher(attributeString);
 
-                    if (matcher.matches()) {
-                        toSaveString = "'''" + StringEscapeUtils.escapeJava(matcher.group(1)) + "'''" + matcher.group(2).replace("^^", "^^<") + ">";
-                    } else {
-                        toSaveString = "'''" + attributeString.replace("^^", "'''^^<") + ">";
+                        if (matcher.matches()) {
+                            toSaveString = "'''" + StringEscapeUtils.escapeJava(matcher.group(1)) + "'''" + matcher.group(2).replace("^^", "^^<") + ">";
+                        } else {
+                            toSaveString = "'''" + attributeString.replace("^^", "'''^^<") + ">";
+                        }
+
+                        w.println("<" + objectURI + "> <" + attributeURI + "> " + toSaveString + " .");
                     }
-
-                    w.println("<" + objectURI + "> <" + attributeURI + "> " + toSaveString + " .");
                 }
 
                 // --------------------------------------------------------------------------------------- REFERENCE
 
+                if (EXPORT_REFERENCES) {
 //                if (DEBUG_LEVEL > 0) System.out.println();
 
-                for (EReference _reference : object.eClass().getEAllReferences()) {
+                    for (EReference _reference : object.eClass().getEAllReferences()) {
 
-                    String referenceType = EcoreUtil.getURI(_reference).toString();
+                        String referenceType = EcoreUtil.getURI(_reference).toString();
 //                    if (DEBUG_LEVEL > 0) System.out.println("\t" + _reference.getName() + "\t" + referenceType);
 
-                    if (_reference.isMany()) {
-                        EList<EObject> references = (EList<EObject>) object.eGet(_reference);
+                        if (_reference.isMany()) {
+                            EList<EObject> references = (EList<EObject>) object.eGet(_reference);
 
-                        for (EObject ref : references) {
-                            String referenceURI = EcoreUtil.getURI(ref).toString();
+                            for (EObject ref : references) {
+                                String referenceURI = EcoreUtil.getURI(ref).toString();
 //                            if (DEBUG_LEVEL > 0) System.out.println("\t\t->\t" + referenceURI);
 
-                            w.println("<" + objectURI + "> <" + referenceType + "> <" + referenceURI + "> .");
-                        }
-                    } else {
-                        EObject ref = (EObject) object.eGet(_reference);
-                        if (ref != null) {
-                            String referenceURI = EcoreUtil.getURI(ref).toString();
+                                w.println("<" + objectURI + "> <" + referenceType + "> <" + referenceURI + "> .");
+                            }
+                        } else {
+                            EObject ref = (EObject) object.eGet(_reference);
+                            if (ref != null) {
+                                String referenceURI = EcoreUtil.getURI(ref).toString();
 //                            if (DEBUG_LEVEL > 0) System.out.println("\t\t->\t" + EcoreUtil.getURI(ref));
 
-                            w.println("<" + objectURI + "> <" + referenceType + "> <" + referenceURI + "> .");
+                                w.println("<" + objectURI + "> <" + referenceType + "> <" + referenceURI + "> .");
+                            }
                         }
                     }
-
                 }
 
             }
