@@ -416,14 +416,14 @@ public class FileDiscoverer implements FileIterator.Function {
                 EObject _object = allContents.next();
                 InternalEObject object = (InternalEObject) _object;
 
-                String objectURI = EcoreUtil.getURI(object).toString();
+                String objectURI = EcoreUtil.getURI(object).toString().replace("[", "%91").replace("]", "%93");
 //                if (DEBUG_LEVEL > 0) System.out.println(objectURI);
 
                 // ------------------------------------------------------------------------------------------- CLASS
 
                 if (EXPORT_CLASS) {
                     EClass eC = object.eClass();
-                    String eCURI = EcoreUtil.getURI(eC).toString();
+                    String eCURI = EcoreUtil.getURI(eC).toString().replace("[", "%91").replace("]", "%93");
 //                if (DEBUG_LEVEL > 0) System.out.println("[ " + eC.getName() + " ]\t" + eCURI);
 
                     w.println("<" + objectURI + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <" + eCURI + "> .");
@@ -433,7 +433,7 @@ public class FileDiscoverer implements FileIterator.Function {
 
                 if (EXPORT_SUPERCLASSES) {
                     for (EClass _eclass : object.eClass().getEAllSuperTypes()) {
-                        String eclassURI = EcoreUtil.getURI(_eclass).toString();
+                        String eclassURI = EcoreUtil.getURI(_eclass).toString().replace("[", "%91").replace("]", "%93");
 //                    if (DEBUG_LEVEL > 0) System.out.println("[ " + _eclass.getName() + " ]\t" + eclassURI);
 
                         w.println("<" + objectURI + "> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <" + eclassURI + "> .");
@@ -445,7 +445,7 @@ public class FileDiscoverer implements FileIterator.Function {
                 if (EXPORT_ATTRIBUTES) {
                     // attributeFor:
                     for (EAttribute _attribute : object.eClass().getEAllAttributes()) {
-                        String attributeURI = EcoreUtil.getURI(_attribute).toString();
+                        String attributeURI = EcoreUtil.getURI(_attribute).toString().replace("[", "%91").replace("]", "%93");
                         Object attribute = object.eGet(_attribute);
                         if (attribute == null) {
                             continue; // attributeFor;
@@ -476,14 +476,14 @@ public class FileDiscoverer implements FileIterator.Function {
 
                     for (EReference _reference : object.eClass().getEAllReferences()) {
 
-                        String referenceType = EcoreUtil.getURI(_reference).toString();
+                        String referenceType = EcoreUtil.getURI(_reference).toString().replace("[", "%91").replace("]", "%93");
 //                    if (DEBUG_LEVEL > 0) System.out.println("\t" + _reference.getName() + "\t" + referenceType);
 
                         if (_reference.isMany()) {
                             EList<EObject> references = (EList<EObject>) object.eGet(_reference);
 
                             for (EObject ref : references) {
-                                String referenceURI = EcoreUtil.getURI(ref).toString();
+                                String referenceURI = EcoreUtil.getURI(ref).toString().replace("[", "%91").replace("]", "%93");
 //                            if (DEBUG_LEVEL > 0) System.out.println("\t\t->\t" + referenceURI);
 
                                 w.println("<" + objectURI + "> <" + referenceType + "> <" + referenceURI + "> .");
@@ -491,7 +491,7 @@ public class FileDiscoverer implements FileIterator.Function {
                         } else {
                             EObject ref = (EObject) object.eGet(_reference);
                             if (ref != null) {
-                                String referenceURI = EcoreUtil.getURI(ref).toString();
+                                String referenceURI = EcoreUtil.getURI(ref).toString().replace("[", "%91").replace("]", "%93");
 //                            if (DEBUG_LEVEL > 0) System.out.println("\t\t->\t" + EcoreUtil.getURI(ref));
 
                                 w.println("<" + objectURI + "> <" + referenceType + "> <" + referenceURI + "> .");

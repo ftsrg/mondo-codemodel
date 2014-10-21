@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -150,7 +151,10 @@ public class CommandParser {
             executor.awaitTermination(9999999, TimeUnit.DAYS);
 
 
-            for (String f : ChangeProcessor.getDeletedFiles()) {
+            Set<String> toRemove = new HashSet<>(ChangeProcessor.getDeletedFiles());
+            toRemove.removeAll(ChangeProcessor.getFilesToProcess());
+
+            for (String f : toRemove) {
                 removeFromGraph(f);
             }
 
