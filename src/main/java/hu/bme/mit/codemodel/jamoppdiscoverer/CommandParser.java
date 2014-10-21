@@ -135,11 +135,20 @@ public class CommandParser {
             long importStart = System.currentTimeMillis();
 
 
+            executor = Executors.newFixedThreadPool(NTHREDS);
             for (String p : packages) {
                 for (String file : packageAndFiles.get(p)) {
-                    updateGraph(file);
+                    UpdaterProcess process = new UpdaterProcess(file);
+                    executor.execute(process);
                 }
             }
+
+            // This will make the executor accept no new threads
+            // and finish all existing threads in the queue
+            executor.shutdown();
+            // Wait until all threads are finish
+            executor.awaitTermination(9999999, TimeUnit.DAYS);
+
 
             for (String f : ChangeProcessor.getDeletedFiles()) {
                 removeFromGraph(f);
@@ -161,30 +170,6 @@ public class CommandParser {
                 fourstore.deleteTriples(newTurtle.getAbsolutePath());
                 System.out.println("Removed: " + newTurtle.getAbsolutePath());
             } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    protected void updateGraph(String filePath) {
-        File oldTurtle = new File(filePath.replace("toprocess", "export") + "-old.ttl");
-        if (oldTurtle.exists()) {
-            try {
-                fourstore.deleteTriples(oldTurtle.getAbsolutePath());
-                System.out.println("Removed: " + oldTurtle.getAbsolutePath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        File newTurtle = new File(filePath.replace("toprocess", "export") + ".ttl");
-        if (newTurtle.exists()) {
-            try {
-                fourstore.load(newTurtle.getAbsolutePath());
-                System.out.println("Added: " + newTurtle.getAbsolutePath());
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -261,6 +246,40 @@ public class CommandParser {
                 packageDiscoverer.execute(new File(file));
             }
 
+        }
+    }
+
+    protected class UpdaterProcess implements Runnable {
+
+        protected String filePath = null;
+
+        public UpdaterProcess(String filePath) {
+            this.filePath = filePath;
+        }
+
+        @Override
+        public void run() {
+            File oldTurtle = new File(filePath.replace("toprocess", "export") + "-old.ttl");
+            if (oldTurtle.exists()) {
+                try {
+                    fourstore.deleteTriples(oldTurtle.getAbsolutePath());
+                    System.out.println("Removed: " + oldTurtle.getAbsolutePath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            File newTurtle = new File(filePath.replace("toprocess", "export") + ".ttl");
+            if (newTurtle.exists()) {
+                try {
+                    fourstore.load(newTurtle.getAbsolutePath());
+                    System.out.println("Added: " + newTurtle.getAbsolutePath());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
