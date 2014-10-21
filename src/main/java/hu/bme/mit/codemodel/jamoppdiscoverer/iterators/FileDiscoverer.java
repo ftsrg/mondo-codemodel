@@ -1,5 +1,6 @@
 package hu.bme.mit.codemodel.jamoppdiscoverer.iterators;
 
+import com.google.common.io.Files;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import hu.bme.mit.codemodel.jamoppdiscoverer.FileIterator;
 import hu.bme.mit.codemodel.jamoppdiscoverer.benchmark.DiscoveryBenchmarkResults;
@@ -544,6 +545,12 @@ public class FileDiscoverer implements FileIterator.Function {
         try {
             File input = new File(outputPath + ".nt");
             File output = new File(outputPath + ".ttl");
+
+
+            if (output.exists()) {
+                Files.move(output, new File(outputPath + "-old.ttl"));
+            }
+
 
             RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
             RDFWriter rdfWriter = Rio.createWriter(RDFFormat.TURTLE,

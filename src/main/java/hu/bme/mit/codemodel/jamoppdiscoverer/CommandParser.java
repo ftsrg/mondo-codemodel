@@ -1,6 +1,7 @@
 package hu.bme.mit.codemodel.jamoppdiscoverer;
 
 import com.google.common.collect.HashMultimap;
+import hu.bme.mit.bigmodel.fourstore.FourStoreDriverCrud;
 import hu.bme.mit.codemodel.jamoppdiscoverer.iterators.FileDiscoverer;
 import hu.bme.mit.codemodel.jamoppdiscoverer.iterators.InitializationIterator;
 import hu.bme.mit.codemodel.jamoppdiscoverer.utils.ReadStream;
@@ -12,6 +13,7 @@ import org.apache.commons.cli.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Set;
@@ -30,6 +32,8 @@ public class CommandParser {
     protected String deletedFilesListPath = null;
     protected static final int NTHREDS = 2;
     //    protected String gitOutputPath = null;
+
+    protected static FourStoreDriverCrud fourstore = new FourStoreDriverCrud("trainbenchmark_cluster", true);
 
     // -----------------------------------------------------------------------------------------------------------------
 
@@ -67,15 +71,17 @@ public class CommandParser {
         System.out.println("[DepGraph] " + (System.currentTimeMillis() - dgStart));
 
 
-        long agsStart = System.currentTimeMillis();
+
         processFiles();
-        System.out.println("[ASG] " + (System.currentTimeMillis() - agsStart));
     }
 
     protected void processFiles() {
         // ----------------------------------------------------------------------------------------------------- PROCESS
 
         try {
+
+            long agsStart = System.currentTimeMillis();
+
             DependencyManager dm = DependencyManager.getInstance();
 
             // MultiMap of packages, and the files inside them
@@ -125,10 +131,62 @@ public class CommandParser {
             executor.awaitTermination(9999999, TimeUnit.DAYS);
 
 
+            System.out.println("[ASG] " + (System.currentTimeMillis() - agsStart));
+            long importStart = System.currentTimeMillis();
+
+
+            for (String p : packages) {
+                for (String file : packageAndFiles.get(p)) {
+                    updateGraph(file);
+                }
+            }
+
+            for (String f : ChangeProcessor.getDeletedFiles()) {
+                removeFromGraph(f);
+            }
+
+            System.out.println("[ImportTime] " + (System.currentTimeMillis() - importStart));
+
         } catch (UnknownHostException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    private void removeFromGraph(String filePath) {
+        File newTurtle = new File(filePath.replace("toprocess", "export") + ".ttl");
+        if (newTurtle.exists()) {
+            try {
+                fourstore.deleteTriples(newTurtle.getAbsolutePath());
+                System.out.println("Removed: " + newTurtle.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    protected void updateGraph(String filePath) {
+        File oldTurtle = new File(filePath.replace("toprocess", "export") + "-old.ttl");
+        if (oldTurtle.exists()) {
+            try {
+                fourstore.deleteTriples(oldTurtle.getAbsolutePath());
+                System.out.println("Removed: " + oldTurtle.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        File newTurtle = new File(filePath.replace("toprocess", "export") + ".ttl");
+        if (newTurtle.exists()) {
+            try {
+                fourstore.load(newTurtle.getAbsolutePath());
+                System.out.println("Added: " + newTurtle.getAbsolutePath());
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -171,7 +229,7 @@ public class CommandParser {
 
         // ----------------------------------------------------------------------------------------------------- DEFAULT
 
-        if (newFilesListPath == null || modifiedFilesListPath == null || deletedFilesListPath == null) {
+        if (newFilesListPath == null && modifiedFilesListPath == null && deletedFilesListPath == null) {
             File f = new File("toprocess/");
             FileIterator.iterate(f, new InitializationIterator());
         }

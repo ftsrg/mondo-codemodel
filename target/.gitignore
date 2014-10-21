@@ -5,3 +5,5 @@
 !import-check.sh
 !transform.sh
 !transform-import-check.sh
+!benchmark.sh
+!benchmark-mod.sh

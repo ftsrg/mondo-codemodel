@@ -2,22 +2,22 @@
 
 # clean the database
 #~/4store-graph-driver/scripts/4s-boss-start-single.sh 
-~/4store-graph-driver/scripts/4s-init-single-node.sh
-~/4store-graph-driver/scripts/4s-restart.sh
+# ~/4store-graph-driver/scripts/4s-init-single-node.sh
+# ~/4store-graph-driver/scripts/4s-restart.sh
 
-FILES=$(find `pwd`/export/ -name "*.ttl")
+# FILES=$(find `pwd`/export/ -name "*.ttl")
 
 
-STIME=$(($(date +%s%N)/1000000))
-for f in $FILES; do
-#	STARTTIME=$(($(date +%s%N)/1000000))
-	~/4store-graph-driver/scripts/4s-import.sh $f
-#	let STARTTIME=$(($(date +%s%N)/1000000))-$STARTTIME
-#	echo $f, $STARTTIME
-done
+# STIME=$(($(date +%s%N)/1000000))
+# for f in $FILES; do
+# #	STARTTIME=$(($(date +%s%N)/1000000))
+# 	~/4store-graph-driver/scripts/4s-import.sh $f
+# #	let STARTTIME=$(($(date +%s%N)/1000000))-$STARTTIME
+# #	echo $f, $STARTTIME
+# done
 
-let STIME=$(($(date +%s%N)/1000000))-$STIME
-echo import time: $STIME >> results/sum.txt
+# let STIME=$(($(date +%s%N)/1000000))-$STIME
+# echo import time: $STIME >> results/sum.txt
 
 STIME=$(($(date +%s%N)/1000000))
 ~/4store-graph-driver/scripts/4s-query.sh  "`cat ../queries/csmr-a.sparql`" | tail -n +2 | tee results/results-a.txt

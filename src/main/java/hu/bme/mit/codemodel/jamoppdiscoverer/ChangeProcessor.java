@@ -20,6 +20,8 @@ public class ChangeProcessor {
      */
     protected static Set<String> filesToProcess = new HashSet<>();
 
+    protected static Set<String> deletedFiles = new HashSet<>();
+
     protected static DependencyCollector dependencyCollector = new DependencyCollector();
 
     // -----------------------------------------------------------------------------------------------------------------
@@ -52,6 +54,8 @@ public class ChangeProcessor {
      *            The path of the deleted file.
      */
     public static void deletedFile(String filePath) {
+        deletedFiles.add(filePath);
+
         DependencyManager dm = null;
         try {
             dm = DependencyManager.getInstance();
@@ -97,5 +101,9 @@ public class ChangeProcessor {
 
     public static Set<String> getFilesToProcess() {
         return filesToProcess;
+    }
+
+    public static Set<String> getDeletedFiles() {
+        return deletedFiles;
     }
 }
